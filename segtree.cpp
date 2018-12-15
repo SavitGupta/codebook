@@ -1,98 +1,109 @@
-// This is set up for range minimum queries, but can be easily adapted for computing other quantities.
-// To enable lazy propagation and range updates, uncomment the following line.
-// #define LAZY
-struct Segtree {
-	int n;
-	vector<int> data;
-#ifdef LAZY
-#define NOLAZY 2e9
-#define GET(node) (lazy[node] == NOLAZY ? data[node] : lazy[node])
-	vector<int> lazy;
-#else
-#define GET(node) data[node]
-#endif
-	void build_rec(int node, int* begin, int* end) {
-		if (end == begin+1) {
-			if (data.size() <= node) data.resize(node+1);
-			data[node] = *begin;
-		} else {
-			int* mid = begin + (end-begin+1)/2;
-			build_rec(2*node+1, begin, mid);
-			build_rec(2*node+2, mid, end);
-			data[node] = min(data[2*node+1], data[2*node+2]);
-		}
-	}
-#ifndef LAZY
-	void update_rec(int node, int begin, int end, int pos, int val) {
-		if (end == begin+1) {
-			data[node] = val;
-		} else {
-			int mid = begin + (end-begin+1)/2;
-			if (pos < mid) {
-				update_rec(2*node+1, begin, mid, pos, val);
-			} else {
-				update_rec(2*node+2, mid, end, pos, val);
-			}
-			data[node] = min(data[2*node+1], data[2*node+2]);
-		}
-	}
-#else
-	void update_range_rec(int node, int tbegin, int tend, int abegin, int aend, int val) {
-		if (tbegin >= abegin && tend <= aend) {
-			lazy[node] = val;
-		} else {
-			int mid = tbegin + (tend - tbegin + 1)/2;
-			if (lazy[node] != NOLAZY) {
-				lazy[2*node+1] = lazy[2*node+2] = lazy[node]; lazy[node] = NOLAZY;
-			}
-			if (mid > abegin && tbegin < aend)
-				update_range_rec(2*node+1, tbegin, mid, abegin, aend, val);
-			if (tend > abegin && mid < aend)
-				update_range_rec(2*node+2, mid, tend, abegin, aend, val);
-			data[node] = min(GET(2*node+1), GET(2*node+2));
-		}
-	}
-#endif
-	int query_rec(int node, int tbegin, int tend, int abegin, int aend) {
-		if (tbegin >= abegin && tend <= aend) {
-			return GET(node);
-		} else {
-#ifdef LAZY
-			if (lazy[node] != NOLAZY) {
-				data[node] = lazy[2*node+1] = lazy[2*node+2] = lazy[node]; lazy[node] = NOLAZY;
-			}
-#endif
-			int mid = tbegin + (tend - tbegin + 1)/2;
-			int res = INT_MAX;
-			if (mid > abegin && tbegin < aend) 
-				res = min(res, query_rec(2*node+1, tbegin, mid, abegin, aend));
-			if (tend > abegin && mid < aend)
-				res = min(res, query_rec(2*node+2, mid, tend, abegin, aend));
-			return res;
-		}
-	}
+const int N = 1e6;
 
-	// Create a segtree which stores the range [begin, end) in its bottommost level.
-	Segtree(int* begin, int* end): n(end - begin) {
-		build_rec(0, begin, end);
-#ifdef LAZY
-		lazy.assign(data.size(), NOLAZY);
-#endif
-	}
+int tree[4*N] = {0}; // initialised zero element for rmq
+int lazy[4*N] = {0};
 
-#ifndef LAZY
-	// Call this to update a value (indices are 0-based). If lazy propagation is enabled, use update_range(pos, pos+1, val) instaed.
-	void update(int pos, int val) {
-		update_rec(0, 0, n, pos, val);
+
+int maxquery(int beg, int fin, int qbeg, int qfin, int cur)
+{
+	if(lazy[cur] != 0)
+	{
+		tree[cur] = tree[cur] + lazy[cur];
+		//doing this because this node represents sum of nodes below it, so total update is value of lazy node multiplied by no. of elements in that nodes subtree
+		if(beg != fin)
+		{
+			lazy[2*cur+1] += lazy[cur];
+			lazy[2*cur+2] += lazy[cur];
+		}
+		lazy[cur] = 0;
 	}
-#else 
-	// Call this to update range [begin, end), if lazy propagation is enabled. Indices are 0-based.
-	void update_range(int begin, int end, int val) {
-		update_range_rec(0, 0, n, begin, end, val);
+	if(beg > fin || beg > qfin || fin < qbeg)
+	{
+		//no overlap;
+		return -1*inf; // ZERO ELEMENT
 	}
-#endif
-	// Returns minimum in range [begin, end). Indices are 0-based.
-	int query(int begin, int end) {
-		return query_rec(0, 0, n, begin, end);
+	if(beg>=qbeg && fin <=qfin)
+	{
+		//total overlap
+		return tree[cur];
 	}
-};
+	//remaining condition for partial overlap
+	int mid = (beg+fin)/2;
+	return (max(maxquery(beg, mid, qbeg, qfin, 2*cur+1),maxquery(mid+1, fin, qbeg, qfin,2*cur+2)));
+}
+
+void rangeupdate(int cur, int beg, int fin, int ubeg, int ufin, int val)
+{
+	if(lazy[cur] != 0)
+	{
+		tree[cur] = tree[cur] + (fin-beg+1)*lazy[cur];
+		//doing this because this node represents sum of nodes below it, so total update is value of lazy node multiplied by no. of elements in that nodes subtree
+		if(beg !=fin)
+		{
+			lazy[2*cur+1] += lazy[cur];
+			lazy[2*cur+2] += lazy[cur];
+		}
+		lazy[cur] = 0;
+	}
+	if(beg > fin || beg > ufin || fin < ubeg)
+	{
+		//no overlap;
+		return;
+	}
+	if(beg>=ubeg && fin<=ufin)
+	{
+		tree[cur] += val;
+
+		if(beg != fin)
+		{
+			lazy[2*cur+1] += val; // updating nodes for rmq
+			lazy[2*cur+2] += val; // updating nodes for rmq
+		}
+		return;
+	}
+	int mid = (beg+fin)/2;
+	rangeupdate(2*cur+1, beg, mid, ubeg, ufin, val);
+	rangeupdate(2*cur+2, mid+1, fin, ubeg, ufin, val);
+	if(tree[2*cur+1] > tree[2*cur+2])
+	{
+		tree[cur] = tree[2*cur+1];
+	}
+	else
+	{
+		tree[cur] = tree[2*cur+2];
+	}
+}
+
+void constructtree(int a[], int beg, int fin, int cur)
+{
+	if(beg > fin)
+	{
+		return;
+	}
+	if(beg == fin)
+	{
+		tree[cur] = a[beg];
+		return;
+	}
+	int mid = (beg+fin)/2;
+	constructtree(a, beg, mid, 2*cur+1);
+	constructtree(a, mid+1, fin, 2*cur+2);
+	if(tree[2*cur+1] > tree[2*cur+2])
+	{
+		tree[cur] = tree[2*cur+1];
+	}
+	else
+	{
+		tree[cur] = tree[2*cur+2];
+	}
+}
+
+void rangeupdater(int n, int rbeg, int rfin, int val)
+{
+	rangeupdate(0, 0, n-1, rbeg, rfin, val);
+}
+
+int maxquerycaller(int n, int rbeg, int rfin)
+{
+	return maxquery(0, n-1, rbeg, rfin, 0);
+}
