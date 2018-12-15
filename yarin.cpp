@@ -10,5 +10,5 @@ memset(a,255,sizeof(a));
 a[0]=0xFE;
 for(i=1;i<MAXSQRT;i++)
 if (a[i>>3]&(1<<(i&7)))
-for(j=i+i+i+1;j<MAXSIEVEHALF;j+=i+i+1)
+for(j=3*i+1;j<MAXSIEVEHALF;j+=2*i+1)
 a[j>>3]&=~(1<<(j&7));
