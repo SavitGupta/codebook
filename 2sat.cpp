@@ -18,7 +18,7 @@
 */
 
 const int N = (int) 5e5 + 10;
-int n;                          // Number of Nodes(excluding negation)
+int n; // Number of Nodes(excluding negation)
 int NUM_VERTICES, id;
 int arr[N * 2];
 vector < int > adj[N * 2];
