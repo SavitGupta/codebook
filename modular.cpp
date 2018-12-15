@@ -2,8 +2,8 @@
 // involve modular linear equations.  Note that all of the
 // algorithms described here work on nonnegative integers.
 
-typedef vector<int> VI;
-typedef pair<int,int> PII;
+typedef vector<int> vll;
+typedef pair<int,int> pii;
 
 // return a % b (positive value)
 int mod(int a, int b) {
@@ -13,7 +13,7 @@ int mod(int a, int b) {
 // computes gcd(a,b)
 int gcd(int a, int b) {
   int tmp;
-  while(b){a%=b; tmp=a; a=b; b=tmp;}
+  while(b){ a%=b; swap(a, b); }
   return a;
 }
 
@@ -36,10 +36,10 @@ int extended_euclid(int a, int b, int &x, int &y) {
 }
 
 // finds all solutions to ax = b (mod n)
-VI modular_linear_equation_solver(int a, int b, int n) {
-  int x, y;
-  VI solutions;
-  int d = extended_euclid(a, n, x, y);
+vll modular_linear_equation_solver(int a, int b, int n) {
+  pii x, y;
+  vll solutions;
+  pii d = extended_euclid(a, n, x, y);
   if (!(b%d)) {
     x = mod (x*(b/d), n);
     for (int i = 0; i < d; i++)
@@ -59,7 +59,7 @@ int mod_inverse(int a, int n) {
 // Chinese remainder theorem (special case): find z such that
 // z % x = a, z % y = b.  Here, z is unique modulo M = lcm(x,y).
 // Return (z,M).  On failure, M = -1.
-PII chinese_remainder_theorem(int x, int a, int y, int b) {
+pii chinese_remainder_theorem(int x, int a, int y, int b) {
   int s, t;
   int d = extended_euclid(x, y, s, t);
   if (a%d != b%d) return make_pair(0, -1);
@@ -71,8 +71,8 @@ PII chinese_remainder_theorem(int x, int a, int y, int b) {
 // unique modulo M = lcm_i (x[i]).  Return (z,M).  On 
 // failure, M = -1.  Note that we do not require the a[i]'s
 // to be relatively prime.
-PII chinese_remainder_theorem(const VI &x, const VI &a) {
-  PII ret = make_pair(a[0], x[0]);
+pii chinese_remainder_theorem(const vll &x, const vll &a) {
+  pii ret = make_pair(a[0], x[0]);pii
   for (int i = 1; i < x.size(); i++) {
     ret = chinese_remainder_theorem(ret.first, ret.second, x[i], a[i]);
     if (ret.second == -1) break;
@@ -81,12 +81,25 @@ PII chinese_remainder_theorem(const VI &x, const VI &a) {
 }
 
 // computes x and y such that ax + by = c; on failure, x = y =-1
-void linear_diophantine(int a, int b, int c, int &x, int &y) {
-  int d = gcd(a,b);
-  if (c%d) {
-    x = y = -1;
+bool linear_diophantine(int a, int b, int c, int &x, int &y, int &g) {
+  g = gcd(a,b);
+  if (c%g) {
+      return false;
   } else {
-    x = c/d * mod_inverse(a/d, b/d);
+    x = c/g * mod_inverse(a/g, b/g);
     y = (c-a*x)/b;
   }
+  return true;
+}
+
+int main() {
+    // To find solution of ax + by = c, call find_any_solution(a, b, c, x, y, g);
+    // x, y, g are just random integers initially, g is gcd(a, b);
+    int x, y, g, a, b, c;
+    cin >> a >> b >> c;
+    if(!linear_diophantine(a, b, c, x, y, g)) // No solution
+    assert(c == a * x + b * y);
+    int qa = b / g, qb = b / g;
+    // X = x + k * qa, Y = y - k * qb are also solutions of the equation where k is any integer.
+
 }
