@@ -3,6 +3,7 @@
 const int N = 1e5 + 10;
 int BIT[N+1][N+1];
 int mat[N+1][N+1];
+int aux[N+1][N+1];
 
 // A structure to hold the queries 
 struct Query 
@@ -43,7 +44,7 @@ int getSum(int x, int y)
   
 // A function to create an auxiliary matrix 
 // from the given input matrix. Used only in Construct2DBIT
-void constructAux(int aux[][N+1]) 
+void constructAux() 
 { 
     // Initialise Auxiliary array to 0 
     for (int i=0; i<=N; i++) 
@@ -62,8 +63,7 @@ void constructAux(int aux[][N+1])
 void construct2DBIT() 
 { 
     // Create an auxiliary matrix 
-    int aux[N+1][N+1]; 
-    constructAux(mat, aux); 
+    constructAux(); 
   
     // Initialise the BIT to 0 
     for (int i=1; i<=N; i++) 
@@ -84,7 +84,7 @@ void construct2DBIT()
   
             // Assigning a value to a particular element 
             // of 2D BIT 
-            updateBIT(BIT, i, j, aux[i][j]-(v1-v2-v4+v3)); 
+            updateBIT(i, j, aux[i][j]-(v1-v2-v4+v3)); 
         } 
     } 
   
@@ -101,8 +101,8 @@ void answerQueries(Query q[], int m)
         int x2 = q[i].x2 + 1; 
         int y2 = q[i].y2 + 1; 
   
-        int ans = getSum(BIT, x2, y2)-getSum(BIT, x2, y1-1)- 
-                  getSum(BIT, x1-1, y2)+getSum(BIT, x1-1, y1-1); 
+        int ans = getSum(x2, y2)-getSum(x2, y1-1)- 
+                  getSum(x1-1, y2)+getSum(x1-1, y1-1); 
   
         printf ("Query(%d, %d, %d, %d) = %d\n", 
                 q[i].x1, q[i].y1, q[i].x2, q[i].y2, ans); 
