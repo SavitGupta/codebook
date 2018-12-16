@@ -25,19 +25,15 @@ vector < int > adj[N * 2];
 bool mark[N * 2];
 
 inline bool dfs(int node) {
-    if (mark[node ^ 1]) {
-        return false;
-    }
-    if (mark[node]) {
-        return true;
-    }
+    if (mark[node ^ 1]) return false;
+    if (mark[node]) return true;
+	
     mark[node] = true;
     arr[id++] = node;
-    for (int i = 0; i < (int) adj[node].size(); i++) {
-        if (!dfs(adj[node][i])) {
+    for (int i = 0; i < (int) adj[node].size(); i++) 
+        if (!dfs(adj[node][i])) 
             return false;
-        }
-    }
+        
     return true;
 }
 
@@ -102,9 +98,7 @@ inline bool solve() {
                 while (id > 0) {
                     mark[arr[--id]] = false;
                 }
-                if(!dfs(i + 1)) {
-                    return false;
-                }
+                if(!dfs(i + 1)) return false;
             }
         }
     }
