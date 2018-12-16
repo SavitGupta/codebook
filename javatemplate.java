@@ -19,22 +19,19 @@ public class Main {
     static class in {
         static BufferedReader buff = new BufferedReader(new InputStream(System.in));
         static StringTokenizer tokenizer = new StringTokenizer("");
-
+		
         static String next() throws IOException {
             while (!tokenizer.hasMoreTokens()) {
                 tokenizer = new StringTokenizer(buff.readLine());
             }
             return tokenizer.nextToken();
         }
-
         static int nextInt() throws IOException {
             return Integer.parseInt(next());
         }
-
         static long nextLong() throws IOException {
             return Long.parseLong(next());
         }
-
         static double nextDouble() throws IOException {
             return Double.parseDouble(next());
         }
