@@ -18,12 +18,18 @@ struct edge {
 	edge(int u, int v, int w): u(u), v(v), w(w) {}
 };
 
+// struct cmp {
+// 	bool operator()(const edge& a, const edge& b) const {
+// 		return a.w < b.w;
+// 	}
+// }
+// set<edge, cmp> s;
+// priority_queue<edge, vector<edge>, cmp> q;
+
 const int N = 1e5 + 10;
-vector<edge> graph;
-vector<edge> spanning_tree;
+vector<edge> graph, spanning_tree;
 int mincost = 0;
-int dsu[N];
-int sz[N];
+int dsu[N], sz[N];
 
 bool edge_sort(const edge &a, const edge &b) {
 	return a.w < b.w;
